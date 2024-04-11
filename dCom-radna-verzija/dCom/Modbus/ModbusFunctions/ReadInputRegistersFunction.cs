@@ -24,67 +24,61 @@ namespace Modbus.ModbusFunctions
         /// <inheritdoc />
         public override byte[] PackRequest()
         {
-            //TO DO: IMPLEMENT
+            byte[] ret = new byte[12];
+
             ModbusReadCommandParameters modbus = (ModbusReadCommandParameters)CommandParameters;
-            byte[] b = new byte[12];
 
             byte[] trans = BitConverter.GetBytes(modbus.TransactionId);
-            b[0] = trans[1];
-            b[1] = trans[0];
+            ret[0] = trans[1];
+            ret[1] = trans[0];
 
             byte[] protc = BitConverter.GetBytes(modbus.ProtocolId);
-            b[2] = protc[1];
-            b[3] = protc[0];
+            ret[2] = protc[1];
+            ret[3] = protc[0];
 
             byte[] length = BitConverter.GetBytes(modbus.Length);
-            b[4] = length[1];
-            b[5] = length[0];
+            ret[4] = length[1];
+            ret[5] = length[0];
 
-            b[6] = (byte)(modbus.UnitId);
+            ret[6] = (byte)(modbus.UnitId);
 
-            b[7] = (byte)(modbus.FunctionCode);
+            ret[7] = (byte)(modbus.FunctionCode);
 
             byte[] start_address = BitConverter.GetBytes(modbus.StartAddress);
-            b[8] = start_address[1];
-            b[9] = start_address[0];
+            ret[8] = start_address[1];
+            ret[9] = start_address[0];
 
             byte[] quantity = BitConverter.GetBytes(modbus.Quantity);
-            b[10] = quantity[1];
-            b[11] = quantity[0];
+            ret[10] = quantity[1];
+            ret[11] = quantity[0];
 
-            return b;
+            return ret;
         }
 
         /// <inheritdoc />
         public override Dictionary<Tuple<PointType, ushort>, ushort> ParseResponse(byte[] response)
         {
-            //TO DO: IMPLEMENT
-            Dictionary<Tuple<PointType, ushort>, ushort> dic = new Dictionary<Tuple<PointType, ushort>, ushort>();
+            Dictionary<Tuple<PointType, ushort>, ushort> ret = new Dictionary<Tuple<PointType, ushort>, ushort>();
             ModbusReadCommandParameters modbus = (ModbusReadCommandParameters)CommandParameters;
 
             if (response.Length <= 9)
             {
-                Console.WriteLine("INVALID MESSAGE!");
+                Console.WriteLine("INVALID MASSAGE!");
             }
             else
             {
                 for (int i = 0; i < response[8]; i += 2)
                 {
-                    Tuple<PointType, ushort> t = Tuple.Create(PointType.DIGITAL_OUTPUT, modbus.StartAddress);
-                    byte[] bytes = new byte[1];
+                    Tuple<PointType, ushort> tuple = Tuple.Create(PointType.ANALOG_INPUT, modbus.StartAddress);
+                    byte[] b = new byte[2];
 
-                    bytes[0] = response[9 + i];
-                    string a = "";
-                    foreach (byte b in bytes)
-                    {
-                        string bit = Convert.ToString(b, 2).PadLeft(8, '0');
-                        a += bit;
-                    }
-                    dic.Add(t, (ushort)Convert.ToUInt16(a, 2));
+                    b[0] = response[10 + i];
+                    b[1] = response[9 + i];
+                    ret.Add(tuple, (ushort)BitConverter.ToUInt16(b, 0));
                 }
             }
 
-            return dic;
+            return ret;
         }
     }
 }
