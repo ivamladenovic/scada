@@ -1,4 +1,4 @@
-STA 1
+STA 39
 TCP 49369
 
 IN_REG  1 3400  0  0   4095  2000  AI  @SC #
